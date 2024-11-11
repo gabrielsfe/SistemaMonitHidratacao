@@ -253,5 +253,85 @@
 
     <audio id="alarme" src="alarme.mp3"></audio>
 
+    <script>
+        const unitToggle = document.getElementById('unitToggle');
+        const intervaloInput = document.getElementById('intervalo');
+        let countdownInterval;
+
+        unitToggle.addEventListener('change', function() {
+            intervaloInput.value = ''; // Zera o valor ao alternar
+            document.getElementById('contador').textContent = ''; // Zera o contador
+            clearInterval(countdownInterval); // Cancela a contagem em andamento
+        });
+
+        document.getElementById('form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const intervaloInputVal = parseInt(intervaloInput.value);
+            const intervalo = unitToggle.checked ? intervaloInputVal : intervaloInputVal * 60;
+            const mensagem = document.getElementById('mensagem').value;
+            const contadorEl = document.getElementById('contador');
+            const alarmeEl = document.getElementById('alarme');
+            const modal = document.getElementById("myModal");
+            const modalMessage = document.getElementById("modalMessage");
+            const closeBtn = document.getElementsByClassName("close")[0];
+            const stopButton = document.getElementById('stopButton');
+            const alarmeFile = document.getElementById("alarmeFile").files[0];
+
+            if (alarmeFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    alarmeEl.src = e.target.result;
+                };
+                reader.readAsDataURL(alarmeFile);
+            }
+
+            function openModal() {
+                modal.style.display = "block";
+                modalMessage.textContent = mensagem;
+            }
+
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            function stopAlarm() {
+                alarmeEl.pause();
+                alarmeEl.currentTime = 0;
+                modal.style.display = "none";
+                stopButton.style.display = "none";
+            }
+
+            stopButton.addEventListener('click', stopAlarm);
+
+            function startCountdown(duration) {
+                let timer = duration, minutes, seconds;
+                clearInterval(countdownInterval); // Reinicia a contagem
+                countdownInterval = setInterval(function () {
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                    contadorEl.textContent = "Tempo restante: " + minutes + ":" + seconds;
+
+                    if (--timer < 0) {
+                        clearInterval(countdownInterval);
+                        alarmeEl.play();
+                        openModal();
+                        stopButton.style.display = "block";
+                    }
+                }, 1000);
+            }
+
+            startCountdown(intervalo);
+        });
+    </script>
 </body>
 </html>
